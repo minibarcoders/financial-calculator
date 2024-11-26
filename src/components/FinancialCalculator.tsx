@@ -734,7 +734,7 @@ const FinancialCalculator = () => {
                       <span className="font-medium text-gray-900">{formatCurrency(calculateYearlyTax(values.powerKw, values.productionYear))}</span>
                     </div>
 
-                    {values.fuelType !== 'electric' && parseInt(values.co2Emissions) >= 146 && (
+                    {values.fuelType !== 'electric' && values.co2Emissions >= 146 && (
                       <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
                         <span className="text-sm text-gray-600">Additional CO₂ Tax:</span>
                         <span className="font-medium text-gray-900">{formatCurrency(calculateCO2Tax(values.co2Emissions))}</span>
