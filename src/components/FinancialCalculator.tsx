@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calculator, Info, Building2, Save, Clock } from 'lucide-react';
+import { Calculator, Clock } from 'lucide-react';
 
 type CalculationType = 'financial-renting' | 'purchase';
 type FuelType = 'benzine' | 'diesel' | 'electric';
@@ -43,6 +43,12 @@ interface SavedCalculation {
   results: CalculationResults;
 }
 
+interface TaxBracket {
+  minKW?: number;
+  maxKW: number;
+  rates: number[];
+}
+
 const VAT_RATE = 0.21;
 
 const initialValues: FormValues = {
@@ -74,7 +80,7 @@ const initialResults: CalculationResults = {
 };
 
 // Tax calculation table based on KW and age
-const TAX_BRACKETS = [
+const TAX_BRACKETS: TaxBracket[] = [
   { maxKW: 70, rates: Array(16).fill(61.50) },
   { 
     minKW: 71, 
@@ -148,9 +154,9 @@ const REGISTRATION_BRACKETS = [
 const calculateYearlyTax = (kw: number, productionYear: number): number => {
   // Find the appropriate tax bracket based on KW
   const bracket = TAX_BRACKETS.find(b => 
-    (b.minKW === undefined && kw <= b.maxKW) || 
-    (b.maxKW === Infinity && kw >= b.minKW) ||
-    (kw >= b.minKW! && kw <= b.maxKW)
+    (!b.minKW && kw <= b.maxKW) || 
+    (b.maxKW === Infinity && kw >= (b.minKW ?? 0)) ||
+    (b.minKW && kw >= b.minKW && kw <= b.maxKW)
   );
 
   if (!bracket) return 0;
@@ -324,11 +330,14 @@ const FinancialCalculator = () => {
     localStorage.setItem('savedCalculations', JSON.stringify(updatedCalculations));
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, type, value, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const isCheckbox = type === 'checkbox';
+    const checked = isCheckbox ? (e.target as HTMLInputElement).checked : undefined;
+    
     setValues(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: isCheckbox ? checked : value
     }));
   };
 
@@ -673,7 +682,7 @@ const FinancialCalculator = () => {
                 onClick={handleSave}
                 className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                <Save className="w-4 h-4" />
+                <Clock className="w-4 h-4" />
                 Save Calculation
               </button>
             </div>
