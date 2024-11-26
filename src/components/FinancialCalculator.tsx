@@ -185,7 +185,7 @@ const calculateCO2Tax = (co2Emissions: number): number => {
   return bracket ? bracket.amount : 0;
 };
 
-const calculateTotalYearlyTax = (kw: number, productionYear: number, co2Emissions: number, fuelType: string): number => {
+const calculateTotalYearlyTax = (kw: number, productionYear: number, co2Emissions: number, fuelType: FuelType): number => {
   // Calculate base tax based on KW and age
   const baseTax = calculateYearlyTax(kw, productionYear);
   
@@ -452,8 +452,8 @@ const FinancialCalculator = () => {
                     value={values.productionYear.toString()}
                     onChange={(e) => {
                       const value = parseInt(e.target.value) || new Date().getFullYear();
-                      const kw = parseInt(values.powerKw) || 0;
-                      const co2 = parseInt(values.co2Emissions) || 0;
+                      const kw = values.powerKw;
+                      const co2 = values.co2Emissions;
                       setValues({ 
                         ...values, 
                         productionYear: value,
@@ -486,8 +486,8 @@ const FinancialCalculator = () => {
                     value={values.powerKw.toString()}
                     onChange={(e) => {
                       const value = parseInt(e.target.value) || 0;
-                      const prodYear = parseInt(values.productionYear) || new Date().getFullYear();
-                      const co2 = parseInt(values.co2Emissions) || 0;
+                      const prodYear = values.productionYear;
+                      const co2 = values.co2Emissions;
                       setValues({ 
                         ...values, 
                         powerKw: value,
@@ -534,8 +534,8 @@ const FinancialCalculator = () => {
                         value={values.co2Emissions.toString()}
                         onChange={(e) => {
                           const value = parseInt(e.target.value) || 0;
-                          const kw = parseInt(values.powerKw) || 0;
-                          const prodYear = parseInt(values.productionYear) || new Date().getFullYear();
+                          const kw = values.powerKw;
+                          const prodYear = values.productionYear;
                           setValues({ 
                             ...values, 
                             co2Emissions: value,
@@ -691,6 +691,10 @@ const FinancialCalculator = () => {
                     <>
                       <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
                         <span className="text-sm text-gray-600">Monthly with Interest:</span>
+                        <span className="font-medium text-gray-900">{formatCurrency(results.monthlyWithInterest)}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                        <span className="text-sm text-gray-600">Monthly with VAT & Interest:</span>
                         <span className="font-medium text-gray-900">{formatCurrency(results.monthlyWithVatAndInterest)}</span>
                       </div>
                       <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
@@ -727,13 +731,13 @@ const FinancialCalculator = () => {
 
                     <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
                       <span className="text-sm text-gray-600">Base Yearly Tax (KW & Age):</span>
-                      <span className="font-medium text-gray-900">{formatCurrency(calculateYearlyTax(parseInt(values.powerKw) || 0, parseInt(values.productionYear) || new Date().getFullYear()))}</span>
+                      <span className="font-medium text-gray-900">{formatCurrency(calculateYearlyTax(values.powerKw, values.productionYear))}</span>
                     </div>
 
                     {values.fuelType !== 'electric' && parseInt(values.co2Emissions) >= 146 && (
                       <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
                         <span className="text-sm text-gray-600">Additional CO₂ Tax:</span>
-                        <span className="font-medium text-gray-900">{formatCurrency(calculateCO2Tax(parseInt(values.co2Emissions) || 0))}</span>
+                        <span className="font-medium text-gray-900">{formatCurrency(calculateCO2Tax(values.co2Emissions))}</span>
                       </div>
                     )}
 
