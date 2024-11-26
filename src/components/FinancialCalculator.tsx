@@ -222,8 +222,8 @@ const calculateRegistrationCost = (engineCapacity: number): number => {
 };
 
 const FinancialCalculator = () => {
-  const [values, setValues] = useState(initialValues);
-  const [results, setResults] = useState(initialResults);
+  const [values, setValues] = useState<FormValues>(initialValues);
+  const [results, setResults] = useState<CalculationResults>(initialResults);
   const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
   const [showSaved, setShowSaved] = useState(false);
 
@@ -328,17 +328,6 @@ const FinancialCalculator = () => {
     const updatedCalculations = savedCalculations.filter(calc => calc.id !== id);
     setSavedCalculations(updatedCalculations);
     localStorage.setItem('savedCalculations', JSON.stringify(updatedCalculations));
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const isCheckbox = type === 'checkbox';
-    const checked = isCheckbox ? (e.target as HTMLInputElement).checked : undefined;
-    
-    setValues(prev => ({
-      ...prev,
-      [name]: isCheckbox ? checked : value
-    }));
   };
 
   const formatCurrency = (amount: number) => {
@@ -460,19 +449,16 @@ const FinancialCalculator = () => {
                   <label className="block text-sm font-medium text-gray-700">Production Year</label>
                   <input
                     type="number"
-                    value={values.productionYear}
+                    value={values.productionYear.toString()}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d{0,4}$/.test(value)) {
-                        const year = parseInt(value) || new Date().getFullYear();
-                        const kw = parseInt(values.powerKw) || 0;
-                        const co2 = parseInt(values.co2Emissions) || 0;
-                        setValues({ 
-                          ...values, 
-                          productionYear: value,
-                          yearlyTax: calculateTotalYearlyTax(kw, year, co2, values.fuelType)
-                        });
-                      }
+                      const value = parseInt(e.target.value) || new Date().getFullYear();
+                      const kw = parseInt(values.powerKw) || 0;
+                      const co2 = parseInt(values.co2Emissions) || 0;
+                      setValues({ 
+                        ...values, 
+                        productionYear: value,
+                        yearlyTax: calculateTotalYearlyTax(kw, value, co2, values.fuelType)
+                      });
                     }}
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     min="1900"
@@ -497,19 +483,16 @@ const FinancialCalculator = () => {
                   <label className="block text-sm font-medium text-gray-700">Power (kW)</label>
                   <input
                     type="number"
-                    value={values.powerKw || ''}
+                    value={values.powerKw.toString()}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        const kw = parseInt(value) || 0;
-                        const prodYear = parseInt(values.productionYear) || new Date().getFullYear();
-                        const co2 = parseInt(values.co2Emissions) || 0;
-                        setValues({ 
-                          ...values, 
-                          powerKw: value,
-                          yearlyTax: calculateTotalYearlyTax(kw, prodYear, co2, values.fuelType)
-                        });
-                      }
+                      const value = parseInt(e.target.value) || 0;
+                      const prodYear = parseInt(values.productionYear) || new Date().getFullYear();
+                      const co2 = parseInt(values.co2Emissions) || 0;
+                      setValues({ 
+                        ...values, 
+                        powerKw: value,
+                        yearlyTax: calculateTotalYearlyTax(value, prodYear, co2, values.fuelType)
+                      });
                     }}
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     min="0"
@@ -548,19 +531,16 @@ const FinancialCalculator = () => {
                       <label className="block text-sm font-medium text-gray-700">CO₂ Emissions (g/km)</label>
                       <input
                         type="number"
-                        value={values.co2Emissions || ''}
+                        value={values.co2Emissions.toString()}
                         onChange={(e) => {
-                          const value = e.target.value;
-                          if (/^\d*$/.test(value)) {
-                            const co2 = parseInt(value) || 0;
-                            const kw = parseInt(values.powerKw) || 0;
-                            const prodYear = parseInt(values.productionYear) || new Date().getFullYear();
-                            setValues({ 
-                              ...values, 
-                              co2Emissions: value,
-                              yearlyTax: calculateTotalYearlyTax(kw, prodYear, co2, values.fuelType)
-                            });
-                          }
+                          const value = parseInt(e.target.value) || 0;
+                          const kw = parseInt(values.powerKw) || 0;
+                          const prodYear = parseInt(values.productionYear) || new Date().getFullYear();
+                          setValues({ 
+                            ...values, 
+                            co2Emissions: value,
+                            yearlyTax: calculateTotalYearlyTax(kw, prodYear, value, values.fuelType)
+                          });
                         }}
                         className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         min="0"
@@ -583,12 +563,10 @@ const FinancialCalculator = () => {
                   </label>
                   <input
                     type="text"
-                    value={values.registrationCost}
+                    value={values.registrationCost.toString()}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        setValues({ ...values, registrationCost: parseInt(value) || 0 });
-                      }
+                      const value = parseInt(e.target.value) || 0;
+                      setValues({ ...values, registrationCost: value });
                     }}
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder="e.g., 1500"
@@ -602,12 +580,10 @@ const FinancialCalculator = () => {
                   </label>
                   <input
                     type="text"
-                    value={values.yearlyTax}
+                    value={values.yearlyTax.toString()}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        setValues({ ...values, yearlyTax: parseInt(value) || 0 });
-                      }
+                      const value = parseInt(e.target.value) || 0;
+                      setValues({ ...values, yearlyTax: value });
                     }}
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder="e.g., 500"
@@ -623,8 +599,11 @@ const FinancialCalculator = () => {
                   <label className="block text-sm font-medium text-gray-700">Total Amount (€)</label>
                   <input
                     type="number"
-                    value={values.totalAmount || ''}
-                    onChange={(e) => setValues({ ...values, totalAmount: parseFloat(e.target.value) || 0 })}
+                    value={values.totalAmount.toString()}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      setValues({ ...values, totalAmount: value });
+                    }}
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -632,8 +611,11 @@ const FinancialCalculator = () => {
                   <label className="block text-sm font-medium text-gray-700">Number of Months</label>
                   <input
                     type="number"
-                    value={values.months || ''}
-                    onChange={(e) => setValues({ ...values, months: parseInt(e.target.value) || 0 })}
+                    value={values.months.toString()}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      setValues({ ...values, months: value });
+                    }}
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -644,9 +626,9 @@ const FinancialCalculator = () => {
                   <label className="block text-sm font-medium text-gray-700">Remaining Value (%)</label>
                   <input
                     type="number"
-                    value={values.remainingValuePercentage || ''}
+                    value={values.remainingValuePercentage.toString()}
                     onChange={(e) =>
-                      setValues({ ...values, remainingValuePercentage: parseFloat(e.target.value) || 0 })
+                      setValues({ ...values, remainingValuePercentage: parseInt(e.target.value) || 0 })
                     }
                     className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
